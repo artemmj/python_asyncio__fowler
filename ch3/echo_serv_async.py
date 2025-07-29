@@ -1,21 +1,52 @@
 import asyncio
+import logging
 import socket
+import signal
 from asyncio import AbstractEventLoop
+from typing import List
 
-async def listen_for_connection(server_socket: socket, loop: AbstractEventLoop):
+
+async def echo(connection: socket, loop: AbstractEventLoop):
+    try:
+        # В бесконечном цикле ожидаем данные от клиента
+        while data := await loop.sock_recv(connection, 1024):
+            print(f'Получены данные: {data}')
+            if data == b'exit\r\n':
+                raise Exception('Ошибка сети!')
+            # Получив данные, отправляем обратно клиенту
+            await loop.sock_sendall(connection, data)
+    except Exception as exc:
+        logging.exception(exc)
+    finally:
+        connection.close()
+
+
+echo_tasks = []
+async def connection_listener(server_socket: socket, loop: AbstractEventLoop):
     while True:
         connection, address = await loop.sock_accept(server_socket)
         connection.setblocking(False)
-        print(f'Получен запрос на подключение от {address}')
-        # После запроса на подключение, создаем задачу echo, ождидающую данные от клиента
-        asyncio.create_task(echo(connection, loop))
+        print(f'Получено сообщение от {address}')
+        echo_task = asyncio.create_task(echo(connection, loop))
+        echo_tasks.append(echo_task)
 
-async def echo(connection: socket, loop: AbstractEventLoop):
-    # В бесконечном цикле ожидаем данные от клиента
-    while data := await loop.sock_recv(connection, 1024):
-        
-        # Получив данные, отправляем обратно клиенту
-        await loop.sock_sendall(connection, data)
+
+class GracefulExit(SystemExit):
+    pass
+
+
+def shutdown():
+    raise GracefulExit()
+
+
+async def close_echo_tasks(echo_tasks: List[asyncio.Task]):
+    waiters = [asyncio.wait_for(task, 2) for task in echo_tasks]
+    for task in waiters:
+        try:
+            await task
+        except asyncio.exceptions.TimeoutError:
+            # Здесь мы ожидаем истечения таймаута
+            pass
 
 async def main():
     server_socket = socket.socket()
@@ -27,7 +58,18 @@ async def main():
     server_socket.listen()
     print('Сервер работает и ждет подключений...')
 
-    # Запускаем сопрограмму прослушивания порта на предмет подключений
-    await listen_for_connection(server_socket, asyncio.get_event_loop())
+    for signame in {'SIGINT', 'SIGTERM'}:
+        loop.add_signal_handler(getattr(signal, signame), shutdown)
 
-asyncio.run(main())
+    # Запускаем сопрограмму прослушивания порта на предмет подключений
+    await connection_listener(server_socket, loop)
+
+
+loop = asyncio.new_event_loop()
+
+try:
+    loop.run_until_complete(main())
+except GracefulExit:
+    loop.run_until_complete(close_echo_tasks(echo_tasks))
+finally:
+    loop.close()
