@@ -42,15 +42,31 @@ CREATE_SKU_TABLE = \
             REFERENCES product_color(product_color_id)
     );"""
 
-# COLOR_INSERT = \
-#     """
-#     INSERT INTO product_color VALUES(1, 'Blue');
-#     INSERT INTO product_color VALUES(2, 'Black');
-#     """
+COLOR_INSERT = \
+    """
+    INSERT INTO product_color VALUES(1, 'Blue');
+    INSERT INTO product_color VALUES(2, 'Black');
+    """
 
-# SIZE_INSERT = \
-#     """
-#     INSERT INTO product_size VALUES(1, 'Small');
-#     INSERT INTO product_size VALUES(2, 'Medium');
-#     INSERT INTO product_size VALUES(3, 'Large');
-#     """
+SIZE_INSERT = \
+    """
+    INSERT INTO product_size VALUES(1, 'Small');
+    INSERT INTO product_size VALUES(2, 'Medium');
+    INSERT INTO product_size VALUES(3, 'Large');
+    """
+
+product_query = \
+"""
+    SELECT
+        p.product_id,
+        p.product_name,
+        p.brand_id,
+        s.sku_id,
+        pc.product_color_name,
+        ps.product_size_name
+    FROM product as p
+        JOIN sku as s on s.product_id = p.product_id
+        JOIN product_color as pc on pc.product_color_id = s.product_color_id
+        JOIN product_size as ps on ps.product_size_id = s.product_size_id
+    WHERE p.product_id = 100
+"""
