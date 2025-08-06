@@ -6,7 +6,7 @@ def async_timed():
     def wrapper(func: Callable) -> Callable:
         @functools.wraps(func)
         async def wrapped(*args, **kwargs) -> Any:
-            print(f'\r\nвыполняется {func}')
+            print(f'Выполняется {func}')
             start = time.time()
             try:
                 return await func(*args, **kwargs)

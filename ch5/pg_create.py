@@ -4,6 +4,7 @@ from typing import List, Tuple, Union
 from random import randint, sample
 
 from _sql_commands import (
+    DELETE_TABLES_IF_EXISTS,
     CREATE_BRAND_TABLE,
     CREATE_PRODUCT_TABLE,
     CREATE_PRODUCT_COLOR_TABLE,
@@ -11,25 +12,7 @@ from _sql_commands import (
     CREATE_SKU_TABLE,
     COLOR_INSERT,
     SIZE_INSERT,
-    product_query,
 )
-
-
-def load_common_words() -> List[str]:
-    """Загружает список рандомных слов из файла в память."""
-    with open('./ch5/_common_words.txt') as ifile:
-        return ifile.readlines()
-
-
-def generate_brand_names(words: List[str]) -> List[Tuple[Union[str, ]]]:
-    """Генерирует на основе переданных слов рандомно 100 кортежей."""
-    return [(words[index],) for index in sample(range(1000), 100)]
-
-
-async def insert_brands(common_words, connection) -> int:
-    """Вставляет сгененированные слова в таблицу."""
-    brands = generate_brand_names(common_words)
-    return await connection.executemany("INSERT INTO brand VALUES(DEFAULT, $1)", brands)
 
 
 def gen_products(
@@ -48,6 +31,7 @@ def gen_products(
 
 
 def gen_skus(product_id_start: int, product_id_end: int, skus_to_create: int) -> List[Tuple[int, int, int]]:
+    """Генерирует список SKU."""
     skus = []
     for _ in range(skus_to_create):
         product_id = randint(product_id_start, product_id_end)
@@ -69,6 +53,7 @@ async def main():
     print(f'Подключено! Версия Postgres: {version}')
 
     statements = [
+        DELETE_TABLES_IF_EXISTS,
         CREATE_BRAND_TABLE,
         CREATE_PRODUCT_TABLE,
         CREATE_PRODUCT_COLOR_TABLE,
@@ -81,8 +66,14 @@ async def main():
         status = await pgconn.execute(statement)
         print(status)
 
-    common_words = load_common_words()
-    await insert_brands(common_words, pgconn)
+    common_words = []
+
+    with open('./ch5/_common_words.txt') as ifile:
+        for row in ifile.readlines():
+            common_words.append(row.strip())
+
+    brands = [(common_words[index],) for index in sample(range(10000), 100)]
+    await pgconn.executemany("INSERT INTO brand VALUES(DEFAULT, $1)", brands)
 
     product_tuples = gen_products(common_words, 1, 100, 1000)
     await pgconn.executemany('INSERT INTO product VALUES(DEFAULT, $1, $2)', product_tuples)

@@ -5,13 +5,13 @@ from utils import async_timed
 from _sql_commands import product_query
 
 
-async def query_product(pool):
+async def query_product(pool: asyncpg.Pool):
     async with pool.acquire() as connection:
         return await connection.fetchrow(product_query)
 
 
 @async_timed()
-async def query_products_synchronously(pool, queries):
+async def query_products_synchronously(pool: asyncpg.Pool, queries):
     return [await query_product(pool) for _ in range(queries)]
 
 
@@ -31,8 +31,8 @@ async def main():
         min_size=6,
         max_size=6,
     ) as pool:
-        await query_products_synchronously(pool, 10000)
-        await query_products_concurrently(pool, 10000)
+        await query_products_synchronously(pool, 50000)
+        await query_products_concurrently(pool, 50000)
 
 
 asyncio.run(main())
