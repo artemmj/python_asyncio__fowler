@@ -6,9 +6,10 @@ from utils import delay, async_timed
 @async_timed()
 async def cpu_bound_work() -> int:
     counter = 0
-    for _ in range(100000000):
+    for _ in range(100_000_000):
         counter += 1
     return counter
+
 
 @async_timed()
 async def main():
@@ -20,4 +21,5 @@ async def main():
     await task_2
     await delay_task
 
-asyncio.run(main())
+
+asyncio.run(main(), debug=True)
