@@ -7,14 +7,14 @@ from utils import async_timed
 from utils._sql_commands import product_query
 
 
-async def query_product(pool):
-    async with pool.acquire() as conn:
+async def query_product(dbpool):
+    async with dbpool.acquire() as conn:
         return await conn.fetchrow(product_query)
 
 
 @async_timed()
-async def query_products_concurrently(pool, queries):
-    queries = [query_product(pool) for _ in range(queries)]
+async def query_products_concurrently(dbpool, queries):
+    queries = [query_product(dbpool) for _ in range(queries)]
     return await asyncio.gather(*queries)
 
 
@@ -28,8 +28,8 @@ def run_in_new_loop(num_queries: int) -> List[Dict]:
             password='Cher86',
             min_size=6,
             max_size=6,
-        ) as pool:
-            return await query_products_concurrently(pool, num_queries)
+        ) as dbpool:
+            return await query_products_concurrently(dbpool, num_queries)
 
     results = [dict(result) for result in asyncio.run(run_queries())]
     return results
