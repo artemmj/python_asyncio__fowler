@@ -48,6 +48,7 @@ async def close_echo_tasks(echo_tasks: List[asyncio.Task]):
             # Здесь мы ожидаем истечения таймаута
             pass
 
+
 async def main():
     server_socket = socket.socket()
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)

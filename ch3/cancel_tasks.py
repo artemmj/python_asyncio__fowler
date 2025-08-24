@@ -15,7 +15,10 @@ def cancel_tasks():
 async def main():
     loop: AbstractEventLoop = asyncio.get_running_loop()
     loop.add_signal_handler(signal.SIGINT, cancel_tasks)
-    await delay(10)
+    
+    asyncio.create_task(delay(10))
+    
+    # await delay(10)
 
 
 asyncio.run(main())

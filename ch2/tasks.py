@@ -44,7 +44,7 @@ async def main():
         print(f'Задача была снята? {task.cancelled()}')
     print()
 
-    # Защита задачи от снятия
+    # Защита задачи от снятия shield
     task = asyncio.create_task(delay(10))
     try:
         result = await asyncio.wait_for(asyncio.shield(task), timeout=5)

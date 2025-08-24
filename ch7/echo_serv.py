@@ -16,18 +16,18 @@ class ClientEchoThread(Thread):
                 if not data:
                     # Если нет данных - возбудить исключение. это бывает, когда
                     # подключение было закрыто клиентом или остановлено сервером
-                    raise BrokenPipeError('Исключение: Подключение закрыто...')
+                    raise BrokenPipeError('Данных нет, останавливаюсь...')
                 print(f'Получено {data}, отправляю обратно...')
                 self.client.sendall(data)
+        # Исключение возбуждается методом sendall(), если клиентский сокет закрывается
         except OSError as exc:
-            # Выйти из метода run, если было исключение. Поток завершается
-            print(f'Поток прерван исключением {exc}, производится остановка...')
+            print(f'Поток прерван исключением: {exc}; производится остановка потока...')
 
     def close(self):
         if self.is_alive():
             # Разомкнуть подключение, если поток еще активен; поток
             # может быть неактивен, если клиент закрыл подключение
-            self.client.sendall(bytes('Останавливаюсь...', encoding='utf-8'))
+            self.client.sendall(bytes('Сервер закрыл подключение...', encoding='utf-8'))
             # Разомкнуть подключение клиента, остановив чтение и запись
             self.client.shutdown(socket.SHUT_RDWR)
 
@@ -37,6 +37,8 @@ async def main():
         server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         server.bind(('127.0.0.1', 8000))
         server.listen()
+        print('Сервер запущен и слушает...')
+
         connection_threads = []
         try:
             while True:
@@ -46,7 +48,7 @@ async def main():
                 thread.start()
         except KeyboardInterrupt:
             print('Останавливаюсь...')
-            [thread.close for thread in connection_threads]
+            [thread.close() for thread in connection_threads]
 
 
 if __name__ == '__main__':

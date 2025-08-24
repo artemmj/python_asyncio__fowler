@@ -10,6 +10,7 @@ async def cpu_bound_work() -> int:
         counter += 1
     return counter
 
+# Конкурентное выполнение нескольких задач
 
 @async_timed()
 async def main():
@@ -22,4 +23,4 @@ async def main():
     await delay_task
 
 
-asyncio.run(main(), debug=True)
+asyncio.run(main())  # debug=True
