@@ -64,11 +64,11 @@ async def read_line(stdin_reader: StreamReader) -> str:
                 input_buffer.pop()
                 erase_last_char()
                 sys.stdout.flush()
-            # Все символы, кроме забоя, добавляются в конец буфера и эхо-копируются
-            else:
-                input_buffer.append(input_char)
-                sys.stdout.write(input_char.decode())
-                sys.stdout.flush()
+        # Все символы, кроме забоя, добавляются в конец буфера и эхо-копируются
+        else:
+            input_buffer.append(input_char)
+            sys.stdout.write(input_char.decode())
+            sys.stdout.flush()
 
     clear_line()
     return b''.join(input_buffer).decode()

@@ -46,8 +46,9 @@ async def main():
             sys.stdout.write(item)
         restore_cursor_position()
 
-    tty.setcbreak(0)
-    os.system('clear')
+    tty.setcbreak(sys.stdin)
+    # os.system('clear')
+    sys.stdout.write('in main()')
     rows = move_to_bottom_of_screen()
 
     messages = MessageStore(redraw_output, rows - 1)

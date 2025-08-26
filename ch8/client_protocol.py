@@ -16,25 +16,22 @@ class HTTPGetClientProtocol(asyncio.Protocol):
         """
         return await self._future
 
-    def _get_request_bytes(self) -> bytes:
-        """Создать РЕЕ-запрос"""
-        reqst = f'GET / HTTP/1.1\r\n' \
-                f'Connection: close\r\n' \
-                f'Host: {self._host}\r\n\r\n'
-        return reqst.encode()
-
     def connection_made(self, transport: Transport):
         """
         После того как подключение установлено, использовать транспорт для отправки запроса.
         """
         print(f'Создано подключение к {self._host}')
         self._transport = transport
-        self._transport.write(self._get_request_bytes())
+        self._transport.write(
+            f'GET / HTTP/1.1\r\n' \
+            f'Connection: close\r\n' \
+            f'Host: {self._host}\r\n\r\n'.encode()
+        )
 
     def data_received(self, data):
         """Получив данные, сохранить их во внутреннем буфере."""
         print('Данные получены...')
-        self._response_buffer += data
+        self._response_buffer += (data[:200] + b'\n.........')
 
     def eof_received(self) -> Optional[bool]:
         """
@@ -55,9 +52,9 @@ class HTTPGetClientProtocol(asyncio.Protocol):
 
 
 async def make_request(host: str, port: int, loop: AbstractEventLoop) -> str:
-    def protocol_factory():
-        return HTTPGetClientProtocol(host, loop)
-    _, protocol = await loop.create_connection(protocol_factory, host=host, port=port)
+    # def protocol_factory():
+    #     return HTTPGetClientProtocol(host, loop)
+    _, protocol = await loop.create_connection(lambda: HTTPGetClientProtocol(host, loop), host=host, port=port)
     return await protocol.get_response()
 
 
