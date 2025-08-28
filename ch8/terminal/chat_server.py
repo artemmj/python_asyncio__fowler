@@ -24,7 +24,7 @@ class ChatServer:
         command, args = command.split(b' ')
         if command == b'CONNECT':
             username = args.replace(b'\n', b'').decode()
-            self._add_user(username, reader, writer)
+            await self._add_user(username, reader, writer)
             await self._on_connect(username, writer)
         else:
             logging.error(f'Получена недопустимая команда ({command}) от клиента, отключается.')
@@ -67,7 +67,7 @@ class ChatServer:
         try:
             while (data := await asyncio.wait_for(reader.readline(), 60)) != b'':
                 await self._notify_all(f'{username}: {data.decode()}')
-                await self._notify_all(f'{username} покинул чат.\n')
+            await self._notify_all(f'{username} покинул чат.\n')
         except Exception as e:
             logging.exception('Ошибка при чтении данных от клиента.', exc_info=e)
             await self._remove_user(username)
@@ -89,4 +89,5 @@ async def main():
     await chat_server.start_chat_server('127.0.0.1', 8000)
 
 
-asyncio.run(main())
+if __name__ == '__main__':
+    asyncio.run(main())

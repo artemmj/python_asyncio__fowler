@@ -2,6 +2,7 @@ import functools
 import time
 from typing import Callable, Any
 
+
 def async_timed():
     def wrapper(func: Callable) -> Callable:
         @functools.wraps(func)

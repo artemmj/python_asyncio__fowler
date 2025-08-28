@@ -6,16 +6,17 @@ import tty
 from asyncio import StreamReader, StreamWriter
 from collections import deque
 
-from _async_delay import (
-    MessageStore,
+from stdin_reader import create_stdin_reader
+from message_store import MessageStore
+from read_line import read_line
+from cursor_helpers import (
     delete_line,
     move_to_bottom_of_screen,
     move_to_top_of_screen,
-    read_line,
     restore_cursor_position,
     save_cursor_position,
 )
-from stdin_reader import create_stdin_reader
+
 
 
 async def send_message(message: str, writer: StreamWriter):
@@ -72,4 +73,5 @@ async def main():
         await writer.wait_closed()
 
 
-asyncio.run(main())
+if __name__ == '__main__':
+    asyncio.run(main())

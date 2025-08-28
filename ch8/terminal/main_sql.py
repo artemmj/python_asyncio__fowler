@@ -5,14 +5,24 @@ import tty
 from collections import deque
 from asyncpg.pool import Pool
 
-from _async_delay import *
+from message_store import MessageStore
+from read_line import read_line
+from cursor_helpers import (
+    delete_line,
+    move_to_bottom_of_screen,
+    move_to_top_of_screen,
+    restore_cursor_position,
+    save_cursor_position,
+)
+from stdin_reader import create_stdin_reader
 
 
 async def run_query(query: str, pool: Pool, message_store: MessageStore):
+    print(f'in run_query(): {query}')
     async with pool.acquire() as conn:
         try:
             result = await conn.fetchrow(query)
-            await message_store.appent(f'Выбрано {len(result)} строк по запросу: {query}')
+            await message_store.append(f'Выбрано {len(result)} строк по запросу: {query} ({result})')
         except Exception as exc:
             await message_store.append(f'Получено исключение {exc} от: {query}')
 
@@ -38,14 +48,16 @@ async def main():
         host='127.0.0.1',
         port=5432,
         user='postgres',
-        password='password',
+        password='password1',
         database='products',
         min_size=6,
         max_size=6,
     ) as pool:
         while True:
+            print('in cycle')
             query = await read_line(stdin_reader)
             asyncio.create_task(run_query(query, pool, messages))
 
 
-asyncio.run(main())
+if __name__ == '__main__':
+    asyncio.run(main())

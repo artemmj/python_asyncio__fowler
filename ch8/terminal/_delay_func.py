@@ -1,6 +1,6 @@
 import asyncio
 
-from .async_timer import async_timed
+from _async_timer import async_timed
 
 
 @async_timed()

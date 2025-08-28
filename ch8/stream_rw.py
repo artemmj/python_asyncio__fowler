@@ -22,7 +22,7 @@ async def main():
         await stream_writer.drain()          # и опустошить буфер писателя
         # Читать строки и сохранять их в списке
         responses = [response async for response in read_until_empty(stream_reader)]
-        print(''.join(responses))
+        print(''.join(responses[:10]))
     finally:
         stream_writer.close()              # Закрыть писатель
         await stream_writer.wait_closed()  # и ждать завершения закрытия
