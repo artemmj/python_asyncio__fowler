@@ -9,8 +9,10 @@ async def main():
         stdout=asyncio.subprocess.PIPE,
     )
     print(f'pid процесса: {process.pid}')
+
     # return_code = await process.wait()
     # print(f'Процесс вернул: {return_code}')
+
     stdout, stderr = await process.communicate()
     print(stdout)
     print(stderr)
